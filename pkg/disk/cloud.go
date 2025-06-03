@@ -1082,9 +1082,11 @@ func createDiskAttempt(req *ecs.CreateDiskRequest, attempt createAttempt, ecsCli
 		} else if aliErr.ErrorCode() == DiskSizeNotAvailable1 || aliErr.ErrorCode() == DiskSizeNotAvailable2 {
 			// although we have checked the size above, but these limits are subject to change, so we may still encounter this error
 			return "", false, fmt.Errorf("invalid disk size: %s", req.Size)
-		} else if aliErr.ErrorCode() == DiskPerformanceLevelNotMatch && attempt.Category == DiskESSD {
+		} else if aliErr.ErrorCode() == DiskPerformanceLevelNotMatch && (attempt.Category == DiskESSD || attempt.Category == DiskESSDXc0 || attempt.Category == DiskESSDXc1) {
+			// assume cloud_ess_xc0 and cloud_essd_xc1 use same CategoryDesc
 			return "", false, fmt.Errorf("invalid disk size: %s", req.Size)
-		} else if aliErr.ErrorCode() == DiskInvalidPL && attempt.Category == DiskESSD {
+		} else if aliErr.ErrorCode() == DiskInvalidPL && (attempt.Category == DiskESSD || attempt.Category == DiskESSDXc0 || attempt.Category == DiskESSDXc1) {
+			// assume cloud_ess_xc0 and cloud_essd_xc1 use same CategoryDesc
 			// observed in cn-north-2-gov-1 region, PL0 is not supported
 			return "", false, fmt.Errorf("performance level %s unsupported", req.PerformanceLevel)
 		} else if aliErr.ErrorCode() == DiskIopsLimitExceeded && attempt.Category == DiskESSDAuto {

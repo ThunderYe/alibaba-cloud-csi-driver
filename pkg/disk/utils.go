@@ -674,6 +674,8 @@ func validateDiskType(opts map[string]string) (diskType []Category, err error) {
 }
 
 func validateDiskPerformanceLevel(opts map[string]string) ([]PerformanceLevel, error) {
+	// assume cloud_ess_xc0 and cloud_essd_xc1 use same CategoryDesc
+	// or should check cloud_ess_xc0 and cloud_essd_xc1 independently
 	opt := opts[ESSD_PERFORMANCE_LEVEL]
 	if opt == "" {
 		return nil, nil
@@ -920,7 +922,9 @@ func volumeCreate(attempt createAttempt, diskID string, volSizeBytes int64, volu
 	accessibleTopology := []*csi.Topology{{Segments: segments}}
 	if attempt.Category != "" {
 		// Add PV Label
-		if attempt.Category == DiskESSD && attempt.PerformanceLevel == "" {
+		// assume cloud_ess_xc0 and cloud_essd_xc1 use same CategoryDesc
+		// or should check cloud_ess_xc0 and cloud_essd_xc1 independently
+		if (attempt.Category == DiskESSD || attempt.Category == DiskESSDXc0 || attempt.Category == DiskESSDXc1) && attempt.PerformanceLevel == "" {
 			attempt.PerformanceLevel = "PL1"
 		}
 		// TODO delete performanceLevel key
